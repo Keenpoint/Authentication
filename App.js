@@ -7,16 +7,13 @@
  */
 
 import React, {Component} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity
-} from 'react-native';
-
-import { WebView } from 'react-native-webview';
-
+import { StyleSheet, View, Text, Image, Button, Picker, ImageBackground } from 'react-native';
+import ProductCard from './ProductCard'
+import Loader from './Loader'
+import TemplateView from './TemplateView'
 import {startNFC, stopNFC} from "./NFCHelper";
+import en from './translations/en'
+import fr from './translations/fr'
 
 class App extends Component {
 
@@ -24,43 +21,70 @@ class App extends Component {
     super(props);
 
     this.state = {
-      titleMessage: "Move the device closer to an NFC tag",
-      descriptionMessage: "Waiting for approach...",
+      translate: props.translate,
+      titleMessage: this.t(props.translate,"Rapprocher l'appareil d'un produit"),
+      descriptionMessage: "En attente d'approche...",
       nfcStarted: false,
       tag: {},
       tagID: null,
+      sku: null,
+      productTitle: null,
       template: null,
       error: null,
-      apiMessage: null
+      apiMessage: null,
+      templateMode: false
     };
     this.hasStartedNFC = this.hasStartedNFC.bind(this)
     this.handleNFCTagReading = this.handleNFCTagReading.bind(this)
+    this.clearState = this.clearState.bind(this)
+    this.handleTemplateModeChange = this.handleTemplateModeChange.bind(this)
+    this.t = this.t.bind(this)
   }
 
-  componentWillMount() {
-    startNFC(this.handleNFCTagReading, this.hasStartedNFC);
+  componentDidMount() {
+    startNFC(this.handleNFCTagReading, this.hasStartedNFC)
   }
 
   componentWillUnmount() {
-    stopNFC(this.hasStartedNFC);
+    stopNFC(this.hasStartedNFC)
+  }
+
+  t(translate, expression) {
+    const result = translate ? en[expression] : fr[expression]
+    return result || expression
+  }
+
+
+  async restart() {
+    await stopNFC(this.hasStartedNFC)
+    await startNFC(this.handleNFCTagReading, this.hasStartedNFC)
   }
 
   hasStartedNFC(bool) {
     this.setState({nfcStarted: bool})
   }
-
   clearState() {
     this.setState({
+      titleMessage: this.t(this.state.translate,"Rapprocher l'appareil d'un produit"),
+      descriptionMessage: "En attente d'approche...",
       tag: {},
       tagID: null,
       template: null,
       apiMessage: null,
-      error: null
+      error: null,
+      sku: null,
+      productTitle: null,
+      templateMode: false
     })
+  }
+
+  handleTemplateModeChange() {
+    this.setState({templateMode: true})
   }
 
   handleNFCTagReading = nfcResult => {
     if (nfcResult.Error) {
+
       this.setState({
         titleMessage: nfcResult.Error.Title,
         descriptionMessage: nfcResult.Error.Message
@@ -69,13 +93,25 @@ class App extends Component {
 
       fetch(`http://172.20.0.23:9003/AuthApi/${nfcResult.tag.id}`)
           .then((response) => response.json())
-          .then((responseJson) => {
-            this.setState({
-              tag: nfcResult.tag,
-              tagID: nfcResult.tag.id,
-              template: responseJson.template,
-              apiMessage: responseJson.message
-            });
+          .then((jsonResponse) => {
+            if(jsonResponse.errorMessage) {
+              this.setState({
+                tag: nfcResult.tag,
+                tagID: nfcResult.tag.id,
+                sku: jsonResponse.sku,
+                productTitle: jsonResponse.productTitle,
+                descriptionMessage: this.t(this.state.translate,jsonResponse.errorMessage)
+              })
+            } else {
+              this.setState({
+                tag: nfcResult.tag,
+                tagID: nfcResult.tag.id,
+                sku: jsonResponse.sku,
+                productTitle: jsonResponse.productTitle,
+                template: jsonResponse.template,
+                apiMessage: jsonResponse.message
+              });
+            }
           })
           .catch((error) =>{
             this.setState({
@@ -88,37 +124,76 @@ class App extends Component {
   };
 
   render(){
-    const {nfcStarted, titleMessage, descriptionMessage, tagID, template, apiMessage} = this.state
-    return template
-        ? (
-            <View style={styles.container}>
-              <WebView source={{html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>${template}</body></html>` }} style={{margin: 20}} />
-              <TouchableOpacity style={{ marginBottom: 20, marginLeft: 20, textAlign: "center" }} onPress={this.clearState.bind(this)}>
-                <Text>Clear tag</Text>
-              </TouchableOpacity>
-            </View>
-        )
-        : (
-            <View style={styles.container}>
-              <Text style={styles.headerMessage}>NFC Tag Reader</Text>
-              {
-                nfcStarted && <Text style={styles.titleMessage}>NFC started</Text>
-              }
+    const { titleMessage, descriptionMessage, tagID, sku, productTitle, template, templateMode, translate } = this.state;
 
-              {
-                apiMessage
-                  ? <Text style={styles.titleMessage}>{apiMessage}</Text>
-                  : <Text style={styles.titleMessage}>{titleMessage}</Text>
-              }
-              {
-                !apiMessage && <Text style={styles.descriptionMessage}>{descriptionMessage}</Text>
-              }
-              <Text style={{ marginTop: 20 }}>{`Current tag ID: ${tagID}`}</Text>
-              <TouchableOpacity style={{ marginTop: 20 }} onPress={this.clearState.bind(this)}>
-                <Text>Clear tag</Text>
-              </TouchableOpacity>
-            </View>
-        )
+    return template && templateMode
+            ? <TemplateView template={template} clearState={this.clearState}/>
+            : (
+                <View>
+                  <ImageBackground source={require('./img/background_image.jpg')} resizeMode='repeat' style={{opacity: 0.3, justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%'}}/>
+                  <View style={{
+                    ...styles.container,
+                    backgroundColor: tagID && 'rgba(16,16,16,0.2)',
+                    position: 'absolute',
+                    zIndex: 4
+                  }}>
+
+                    <Picker
+                        selectedValue={this.state.translate ? "en": "fr"}
+                        style={{height: 30, width: 50}}
+                        onValueChange={ itemValue => {
+                          this.setState({
+                            translate: itemValue === "en",
+                            titleMessage: this.t(itemValue === "en","Rapprocher l'appareil d'un produit"),
+                          })
+                        }}>
+                      <Picker.Item label="fr" value="fr" />
+                      <Picker.Item label="en" value="en" />
+                    </Picker>
+                    <View style={styles.logoContainer}>
+                      <Image source={require('./img/Blason-seul.png')} style={{height: 220, width: 220, backgroundColor: 'transparent', marginTop: 30}}/>
+                    </View>
+                    <View style={styles.title}>
+                      <Text style={{fontSize: 18, color: 'black', fontWeight: '300', fontFamily: 'Garamond, Times New Roman, Serif', marginTop: 30}}>{this.t(translate, "appTitle")}</Text>
+                    </View>
+
+                    <View style={styles.loadingArea}>
+                      {
+                        !tagID
+                            ? (
+                                <View>
+                                  <Loader/>
+                                  <Text style={{textAlign: 'center', marginBottom: 40}}> {titleMessage} </Text>
+                                </View>
+                            )
+                            : sku ? (
+                                <ProductCard
+                                    productTitle={productTitle}
+                                    handleTemplateModeChange={this.handleTemplateModeChange}
+                                    sku={sku}
+                                    clearState={() => this.clearState()}
+                                    t={expression => this.t(this.state.translate, expression)}
+                                />
+                            )
+                            : (
+                                <View>
+                                  <Text style={{textAlign: 'center', fontSize: 18, marginBottom: 30}}> {descriptionMessage} </Text>
+                                  <Button
+                                      onPress={() => {
+                                        this.restart().then(() => this.clearState())
+                                      }}
+                                      style={{fontFamily: 'Times New Roman, Serif'}}
+                                      color='#e94e24'
+                                      title={this.t(translate,"Recommencer")}
+                                  />
+                                </View>
+                            )
+
+                      }
+                    </View>
+                  </View>
+                </View>
+            )
 
   }
 
@@ -126,27 +201,29 @@ class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    height: '100%',
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'stretch'
   },
-  headerMessage: {
-    fontWeight: "bold",
-    fontSize: 32
+  logoContainer: {
+    flex: 2,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  titleMessage: {
-    fontWeight: "bold",
-    fontSize: 18,
-    marginTop: 34
+  title: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  descriptionMessage: {
-    fontWeight: "normal",
-    fontSize: 16,
-    marginTop: 12,
+  loadingArea: {
+    flex: 6,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  tagValue: {
-    fontWeight: "normal",
-    fontSize: 16,
-    marginTop: 18,
-    color: "#77D353"
+  loader: {
+    width: 250,
+    height: 250,
   }
 });
 
