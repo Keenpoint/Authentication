@@ -129,29 +129,31 @@ class App extends Component {
     return template && templateMode
             ? <TemplateView template={template} clearState={this.clearState}/>
             : (
-                <View>
-                  <ImageBackground source={require('./img/background_image.jpg')} resizeMode='repeat' style={{opacity: 0.3, justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%'}}/>
-                  <View style={{
-                    ...styles.container,
-                    backgroundColor: tagID && 'rgba(16,16,16,0.2)',
-                    position: 'absolute',
-                    zIndex: 4
-                  }}>
-
-                    <Picker
-                        selectedValue={this.state.translate ? "en": "fr"}
-                        style={{height: 30, width: 50}}
-                        onValueChange={ itemValue => {
-                          this.setState({
-                            translate: itemValue === "en",
-                            titleMessage: this.t(itemValue === "en","Rapprocher l'appareil d'un produit"),
-                          })
-                        }}>
-                      <Picker.Item label="fr" value="fr" />
-                      <Picker.Item label="en" value="en" />
-                    </Picker>
+                <View style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between'
+                }}>
+                  <ImageBackground source={require('./img/background_image.jpg')} resizeMode='repeat' style={{position: 'absolute', zIndex: -1, opacity: 0.5, width: '100%', height: '100%'}}/>
+                  <View style={{width: '3%',height:'100%',backgroundColor:'#d0e1e3'}}/>
+                  <View style={styles.container}>
+                    <View style={{position:'absolute', right: 0}}>
+                      <Text>{this.state.translate? 'EN' : 'FR'}</Text>
+                      <Picker
+                          selectedValue={this.state.translate ? "en": "fr"}
+                          style={{height: 20, width: 30}}
+                          onValueChange={ itemValue => {
+                            this.setState({
+                              translate: itemValue === "en",
+                              titleMessage: this.t(itemValue === "en","Rapprocher l'appareil d'un produit"),
+                            })
+                          }}>
+                        <Picker.Item label="fr" value="fr" />
+                        <Picker.Item label="en" value="en" />
+                      </Picker>
+                    </View>
                     <View style={styles.logoContainer}>
-                      <Image source={require('./img/Blason-seul.png')} style={{height: 220, width: 220, backgroundColor: 'transparent', marginTop: 30}}/>
+                      <Image source={require('./img/Blason-seul.png')} style={{height: 180, width: 180, backgroundColor: 'transparent', marginTop: 30}}/>
                     </View>
                     <View style={styles.title}>
                       <Text style={{fontSize: 18, color: 'black', fontWeight: '300', fontFamily: 'Garamond, Times New Roman, Serif', marginTop: 30}}>{this.t(translate, "appTitle")}</Text>
@@ -188,10 +190,11 @@ class App extends Component {
                                   />
                                 </View>
                             )
-
                       }
                     </View>
+
                   </View>
+                  <View style={{width: '3%',height:'100%',backgroundColor:'#d0e1e3'}}/>
                 </View>
             )
 
@@ -201,8 +204,9 @@ class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#d0e1e3',
     height: '100%',
-    width: '100%',
+    width: '75%',
     flexDirection: 'column',
     alignItems: 'stretch'
   },

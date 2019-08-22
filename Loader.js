@@ -20,7 +20,7 @@ class Loader extends Component {
                             this.animation = animation;
                         }}
                         resizeMode='cover'
-                        source={require('./loaders/zoom-when-loading-data')}
+                        source={require('./loaders/loading_1')}
                     />
                 </View>
             </View>
