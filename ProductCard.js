@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {
     StyleSheet,
     View,
-    Text, Button, Image,
+    Text, Button, Image, Linking
 } from 'react-native';
 
 class ProductCard extends Component {
@@ -37,7 +37,7 @@ class ProductCard extends Component {
                         </View>
                         <View style={styles.snippetBranch}>
                             <Button
-                                onPress={() => handleTemplateModeChange()}
+                                onPress={() => Linking.openURL('https://www.keenpoint.com').catch((err) => console.error('An error occurred', err))}
                                 style={{margin: 10}}
                                 color='#79B4BB'
                                 title={t("Voir plus")}
