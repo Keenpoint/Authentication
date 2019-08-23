@@ -137,19 +137,21 @@ class App extends Component {
                     position: 'absolute',
                     zIndex: 4
                   }}>
-
-                    <Picker
-                        selectedValue={this.state.translate ? "en": "fr"}
-                        style={{height: 30, width: 50}}
-                        onValueChange={ itemValue => {
-                          this.setState({
-                            translate: itemValue === "en",
-                            titleMessage: this.t(itemValue === "en","Rapprocher l'appareil d'un produit"),
-                          })
-                        }}>
-                      <Picker.Item label="fr" value="fr" />
-                      <Picker.Item label="en" value="en" />
-                    </Picker>
+                    <View style={{position:'absolute', right: 0}}>
+                      <Text>{this.state.translate? 'EN' : 'FR'}</Text>
+                      <Picker
+                          selectedValue={this.state.translate ? "en": "fr"}
+                          style={{height: 20, width: 30}}
+                          onValueChange={ itemValue => {
+                            this.setState({
+                              translate: itemValue === "en",
+                              titleMessage: this.t(itemValue === "en","Rapprocher l'appareil d'un produit"),
+                            })
+                          }}>
+                        <Picker.Item label="fr" value="fr" />
+                        <Picker.Item label="en" value="en" />
+                      </Picker>
+                    </View>
                     <View style={styles.logoContainer}>
                       <Image source={require('./img/Blason-seul.png')} style={{height: 220, width: 220, backgroundColor: 'transparent', marginTop: 30}}/>
                     </View>
