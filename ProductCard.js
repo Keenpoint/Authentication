@@ -37,7 +37,7 @@ class ProductCard extends Component {
                         </View>
                         <View style={styles.snippetBranch}>
                             <Button
-                                onPress={() => Linking.openURL('https://www.keenpoint.com').catch((err) => console.error('An error occurred', err))}
+                                onPress={() => Linking.openURL('https://www.terredenfant.com').catch((err) => console.error('An error occurred', err))}
                                 style={{margin: 10}}
                                 color='#79B4BB'
                                 title={t("Voir plus")}
