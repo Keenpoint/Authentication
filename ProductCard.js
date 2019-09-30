@@ -8,18 +8,9 @@ import {
 class ProductCard extends Component {
 
     render(){
-        const { productTitle, sku, handleTemplateModeChange, clearState, t } = this.props
+        const { productTitle, sku, clearState, t } = this.props
         return (
             <View style={styles.productCard}>
-                <View style={{
-                    width: 100,
-                    height: 100,
-                    borderTop: 200,
-                    borderRight: 200,
-                    borderBottom: 200,
-                    borderLeft: 200,
-                    borderColor: 'black'
-                }}/>
                 <View style={{flex: 1}} >
                     <Text style={{textAlign: 'center', fontWeight: '300',fontSize: 22, fontFamily: 'Garamond, Times New Roman, Serif', color: "#bd9455", marginTop: 15}}> {productTitle} </Text>
                     <Image source={require("./img/Terre_d'enfant.png")} resizeMode='contain' style={{height: 150, width: 250, marginTop: 20, marginBottom: 10}}/>
