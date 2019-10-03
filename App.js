@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react'
-import { StyleSheet, View, Text, Image, Button, ImageBackground } from 'react-native'
+import {StyleSheet, View, Text, Image, Button, Linking} from 'react-native';
 import ProductCard from './ProductCard'
 import Loader from './Loader'
 import {startNFC, stopNFC} from "./NFCHelper"
@@ -151,6 +151,14 @@ class App extends Component {
                     : (
                         <View>
                           <Text style={{textAlign: 'center', fontSize: 18, marginBottom: 20}}> {descriptionMessage} </Text>
+                          {
+                            userId && <Button
+                                onPress={() => Linking.openURL(`http://172.20.0.23:3000/business/5d2c3ae7f61a100577a52972/referential/m-A-tag?code=${tagID}`).catch((err) => console.error('An error occurred', err))}
+                                style={{fontFamily: 'Times New Roman, Serif'}}
+                                color='#e94e24'
+                                title={t("Enregistrer")}
+                            />
+                          }
                           <Text style={{textAlign: 'center', fontSize: 18, marginBottom: 20}}> ID : {tagID} </Text>
                           <Button
                               onPress={() => {
@@ -160,16 +168,6 @@ class App extends Component {
                               color='#e94e24'
                               title={t("Recommencer")}
                           />
-                          {
-                            userId && <Button
-                                onPress={() => {
-                                  this.restart().then(() => this.clearState())
-                                }}
-                                style={{fontFamily: 'Times New Roman, Serif'}}
-                                color='#e94e24'
-                                title={t("registerTag")}
-                            />
-                          }
                         </View>
                     )
               }
